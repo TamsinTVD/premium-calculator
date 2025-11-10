@@ -31,7 +31,7 @@
 <body>
   <header class="wrap">
     <h1>Early Website Upgrade</h1>
-    <p>Premium customers get a <strong>free website at their 3-year Premium anniversary</strong>. Charge only for the days remaining <em>until the next renewal</em> as a fraction of the 3-year window.</p>
+    <p>Premium customers get a <strong>free website at their 3-year Premium anniversary</strong>. Charge only for the days remaining until that date.</p>
   </header>
 
   <main class="wrap">
@@ -44,18 +44,6 @@
         </div>
 
         <div class="col-6">
-          <label for="renewalDate">Annual renewal date</label>
-          <input id="renewalDate" type="date" />
-          <div class="hint">Used to compute the charge window (today → renewal).</div>
-        </div>
-
-        <div class="col-4">
-          <label for="daysToRenewal">Days remaining until renewal</label>
-          <input id="daysToRenewal" type="number" readonly />
-          <div class="hint">Auto-calculated from today → renewal date.</div>
-        </div>
-
-        <div class="col-4">
           <label for="siteCost">New website cost (£)</label>
           <input id="siteCost" type="number" min="0" step="0.01" value="1495" />
           <div class="hint">Editable. Default £1495.</div>
@@ -67,17 +55,28 @@
           <div class="hint">Automatically calculated as Premium start + 3 years.</div>
         </div>
 
+        <div class="col-4">
+          <label for="windowDays">Total days in 3-year window</label>
+          <input id="windowDays" type="number" readonly />
+          <div class="hint">Exact UTC days; 1095 or 1096 if there’s a leap day.</div>
+        </div>
+
+        <div class="col-4">
+          <label for="daysRemaining">Days remaining until free</label>
+          <input id="daysRemaining" type="number" readonly />
+          <div class="hint">From today to the free website date (never negative).</div>
+        </div>
+
         <div class="col-6 kpi">
-          <span class="pill">Eligibility window</span>
-          <div>Total days in 3-year window: <b id="totalWindow">0</b></div>
-          <div>Days to renewal (numerator): <b id="daysNumerator">0</b></div>
-          <div class="hint">We use exact UTC day counts; if a leap day occurs, the window is 1096.</div>
+          <span class="pill">Daily website rate</span>
+          <div>Cost ÷ window: <b id="dailyRate">£0.00</b></div>
+          <div class="hint">Exact rate used in the multiplication.</div>
         </div>
 
         <div class="col-6 kpi total">
           <span class="pill">Amount to charge now</span>
           <div>Prorated total: <b id="charge">£0.00</b></div>
-          <div class="hint">Formula: <code>Website cost × (Days to renewal ÷ 3-year window)</code> (capped at 100%).</div>
+          <div class="hint">Formula: <code>Website cost ÷ Window days × Days remaining</code></div>
         </div>
 
         <div class="col-12">
@@ -96,6 +95,8 @@
   <script>
     (function(){
       const GBP = (n) => new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n||0);
+
+      // UTC-safe helpers
       const floorUTC = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
       const addYearsUTC = (d, y) => { const t = floorUTC(d); t.setUTCFullYear(t.getUTCFullYear()+y); return t; };
       const daysBetweenUTC = (a, b) => {
@@ -107,12 +108,11 @@
 
       const els = {
         premiumStart: document.getElementById('premiumStart'),
-        renewalDate: document.getElementById('renewalDate'),
-        daysToRenewal: document.getElementById('daysToRenewal'),
         siteCost: document.getElementById('siteCost'),
         freeDate: document.getElementById('freeDate'),
-        totalWindow: document.getElementById('totalWindow'),
-        daysNumerator: document.getElementById('daysNumerator'),
+        windowDays: document.getElementById('windowDays'),
+        daysRemaining: document.getElementById('daysRemaining'),
+        dailyRate: document.getElementById('dailyRate'),
         charge: document.getElementById('charge'),
         recalc: document.getElementById('recalc'),
         copy: document.getElementById('copy'),
@@ -122,51 +122,49 @@
 
       function recalc(){
         const startStr = els.premiumStart.value;
-        const renewStr = els.renewalDate.value;
         const cost = Number(els.siteCost.value || 0);
-        if (!startStr || !renewStr) return;
+        if (!startStr) return;
 
         const start = new Date(startStr + 'T12:00:00');
-        const renewal = new Date(renewStr + 'T12:00:00');
         const today = floorUTC(new Date());
 
-        // 3-year window = start → (start + 3 years)
+        // 3-year free date & window
         const free = addYearsUTC(start, 3);
+        const window = daysBetweenUTC(floorUTC(start), free);
+        const remain = Math.max(0, daysBetweenUTC(today, free));
+
+        // Rate and amount (your requested formula)
+        const rate = window > 0 ? cost / window : 0;
+        const amount = Math.round(rate * remain * 100) / 100;
+
+        // UI
         els.freeDate.value = free.toISOString().slice(0,10);
-        const windowDays = daysBetweenUTC(floorUTC(start), free);
-
-        // Numerator = days to renewal (today → renewal), clamped to [0, windowDays]
-        let toRenewal = daysBetweenUTC(today, floorUTC(renewal));
-        if (toRenewal > windowDays) toRenewal = windowDays; // never charge more than 100%
-        els.daysToRenewal.value = String(toRenewal);
-        els.totalWindow.textContent = String(windowDays);
-        els.daysNumerator.textContent = String(toRenewal);
-
-        // Amount
-        const charge = windowDays > 0 ? cost * (toRenewal / windowDays) : 0;
-        els.charge.textContent = GBP(Math.round(charge * 100) / 100);
+        els.windowDays.value = String(window);
+        els.daysRemaining.value = String(remain);
+        els.dailyRate.textContent = '£' + rate.toFixed(6);
+        els.charge.textContent = GBP(amount);
 
         // Summary
         els.summaryBox.hidden = false;
         els.summaryText.innerHTML = `
           <ul>
             <li>Premium start: <strong>${startStr}</strong></li>
-            <li>3-year free website date: <strong>${els.freeDate.value}</strong></li>
-            <li>3-year window days (start → free): <strong>${windowDays}</strong></li>
-            <li>Days to renewal (used): <strong>${toRenewal}</strong></li>
-            <li>New website cost: <strong>${GBP(cost)}</strong></li>
+            <li>Free website date (3 years): <strong>${els.freeDate.value}</strong></li>
+            <li>Window days (start → free): <strong>${window}</strong></li>
+            <li>Days remaining to free: <strong>${remain}</strong></li>
+            <li>Website cost: <strong>${GBP(cost)}</strong></li>
             <li><em>Amount to charge now</em>: <strong>${els.charge.textContent}</strong></li>
           </ul>
-          <div class="hint">Formula: <code>${cost.toFixed(2)} × (${toRenewal} ÷ ${windowDays})</code></div>
+          <div class="hint">Formula used: <code>${cost.toFixed(2)} ÷ ${window} × ${remain}</code></div>
         `;
       }
 
       function copySummary(){
         const txt = [
           `Premium start: ${els.premiumStart.value}`,
-          `3-year free date: ${els.freeDate.value}`,
-          `3-year window days: ${els.totalWindow.textContent}`,
-          `Days to renewal (used): ${els.daysNumerator.textContent}`,
+          `Free website date (3 years): ${els.freeDate.value}`,
+          `Window days: ${els.windowDays.value}`,
+          `Days remaining to free: ${els.daysRemaining.value}`,
           `Website cost: £${Number(els.siteCost.value || 0).toFixed(2)}`,
           `Amount to charge now: ${els.charge.textContent}`
         ].join('\\n');
@@ -176,7 +174,7 @@
       }
 
       document.addEventListener('input', (e)=>{
-        if (['premiumStart','renewalDate','siteCost'].includes(e.target.id)) recalc();
+        if (['premiumStart','siteCost'].includes(e.target.id)) recalc();
       });
       els.recalc.addEventListener('click', recalc);
       els.copy.addEventListener('click', copySummary);
@@ -185,8 +183,6 @@
       const t = new Date();
       const yyyy = t.getFullYear(), mm = String(t.getMonth()+1).padStart(2,'0'), dd = String(t.getDate()).padStart(2,'0');
       els.premiumStart.value = `${yyyy}-${mm}-${dd}`;
-      const next = new Date(t); next.setFullYear(t.getFullYear()+1);
-      els.renewalDate.value = `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
       recalc();
     })();
   </script>
