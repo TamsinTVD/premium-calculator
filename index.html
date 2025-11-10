@@ -3,83 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Premium Support Proration Calculator (GBP)</title>
+  <title>Tree View Designs · Premium Upgrade Calculator</title>
   <style>
-    :root{
-      --bg:#0b0c0c;--card:#fff;--ink:#111827;--muted:#6b7280;
-      --brand:#2563eb;--ring:rgba(37,99,235,.3);--ok:#16a34a
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f3f4f6;color:var(--ink)}
-    header{background:var(--bg);color:#fff;padding:1.25rem 1rem}
-    header h1{margin:0;font-size:1.125rem;font-weight:700}
-    header p{margin:.25rem 0 0;color:#e5e7eb}
-    .wrap{max-width:940px;margin:1.25rem auto;padding:0 1rem}
-    .card{background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:1.1rem}
-    .grid{display:grid;gap:1rem;grid-template-columns:repeat(12,minmax(0,1fr))}
-    .col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-12{grid-column:span 12}
-    @media (max-width:800px){.col-6,.col-4{grid-column:span 12}}
-    label{display:block;font-weight:600;margin-bottom:.35rem}
-    .hint{font-size:.8rem;color:var(--muted);margin-top:.25rem}
-    input[type="date"],input[type="number"],input[type="text"]{width:100%;padding:.65rem .7rem;border:1px solid #e5e7eb;border-radius:10px;outline:none;font-size:1rem;background:#fff}
-    input:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--ring)}
-    input[readonly]{background:#f9fafb;color:#6b7280}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--brand);background:var(--brand);color:#fff;font-weight:700;cursor:pointer}
-    .btn.secondary{background:#fff;color:var(--brand)}
-    .kpi{background:#f9fafb;border:1px dashed #e5e7eb;border-radius:12px;padding:.9rem;display:grid;gap:.35rem}
-    .pill{display:inline-block;padding:.2rem .55rem;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:700;font-size:.75rem}
+    :root{--bg:#0b0c0c;--ink:#1f2937;--muted:#6b7280;--surface:#ffffff;--soft:#f6f7fb;--brand1:#06b6d4;--brand2:#7c3aed;--ring:rgba(124,58,237,.25)}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink)}
+    .topbar{background:linear-gradient(90deg,var(--brand1),#4f46e5,var(--brand2));height:8px}
+    header{background:#fff;padding:18px 16px;border-bottom:1px solid #e5e7eb}
+    .wrap{max-width:980px;margin:0 auto;padding:0 12px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand img{height:54px;width:auto}
+    .brand h1{font-size:1.35rem;margin:0}
+    .brand small{display:block;color:var(--muted);margin-top:2px}
+    .card{background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:18px;margin:18px auto}
+    .grid{display:grid;gap:14px;grid-template-columns:repeat(12,minmax(0,1fr))}
+    .col-12{grid-column:span 12}.col-6{grid-column:span 6}.col-4{grid-column:span 4}
+    @media (max-width:860px){.col-6,.col-4{grid-column:span 12}}
+    label{display:block;font-weight:600;margin-bottom:6px}
+    .hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+    input[type='date'],input[type='number']{width:100%;padding:.7rem .85rem;border:1px solid #e5e7eb;border-radius:12px;background:#fff;font-size:1rem;outline:none;transition:box-shadow .15s,border-color .15s}
+    input:focus{border-color:#7c3aed;box-shadow:0 0 0 4px var(--ring)} input[readonly]{background:#f9fafb;color:#6b7280}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-radius:12px;border:1px solid #4f46e5;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#fff;color:#4f46e5}
+    .kpi{background:#f8fafc;border:1px dashed #e5e7eb;border-radius:14px;padding:12px}
+    .kpi .title{font-size:.8rem;font-weight:700;color:#4338ca;text-transform:uppercase;letter-spacing:.02em}
     .total{background:#ecfdf5;border:1px solid #a7f3d0}
-    .summary{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1rem}
-    .ok{color:var(--ok);font-weight:700}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+    .summary{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .ok{color:#16a34a;font-weight:700}
+    footer{color:#6b7280;font-size:.85rem;padding:20px 0}
   </style>
 </head>
 <body>
+  <div class="topbar"></div>
   <header>
-    <h1>Premium Support Proration Calculator (GBP)</h1>
-    <p>Customer has already paid <strong>Basic</strong>. Charge only the additional amount for <strong>Premium</strong> between the chosen start date and the renewal date.</p>
+    <div class="wrap brand">
+      <img src="assets/tvd-logo.png" alt="Tree View Designs logo" />
+      <div>
+        <h1>Tree View Designs — Premium Upgrade Calculator</h1>
+        <small>Prorates the additional amount between the Premium start date and the customer’s renewal date.</small>
+      </div>
+    </div>
   </header>
 
   <main class="wrap">
-    <section class="card" aria-labelledby="calcTitle">
-      <h2 id="calcTitle" class="sr-only">Calculator</h2>
-
+    <section class="card">
       <div class="grid">
         <div class="col-6">
           <label for="startDate">Premium start date</label>
           <input id="startDate" type="date" />
-          <div class="hint">The date Premium cover begins.</div>
+          <div class="hint">Date Premium cover begins.</div>
         </div>
         <div class="col-6">
           <label for="renewalDate">Annual renewal date</label>
           <input id="renewalDate" type="date" />
-          <div class="hint">The customer’s next renewal date for their current support term.</div>
+          <div class="hint">Customer’s next renewal date.</div>
         </div>
 
         <div class="col-4">
           <label for="daysRemaining">Days remaining until renewal</label>
-          <input id="daysRemaining" type="number" inputmode="numeric" min="0" step="1" readonly />
+          <input id="daysRemaining" type="number" min="0" step="1" readonly />
           <div class="hint">Auto-calculated from the two dates.</div>
         </div>
         <div class="col-4">
           <label for="premiumAnnual">Premium annual fee</label>
-          <input id="premiumAnnual" type="number" inputmode="decimal" min="0" step="0.01" value="895" />
+          <input id="premiumAnnual" type="number" min="0" step="0.01" value="895" />
           <div class="hint">Editable (£/year).</div>
         </div>
         <div class="col-4">
           <label for="basicAnnual">Basic annual fee (already paid)</label>
-          <input id="basicAnnual" type="number" inputmode="decimal" min="0" step="0.01" value="495" />
-          <div class="hint">Editable (£/year). This is treated as already paid until the renewal date.</div>
+          <input id="basicAnnual" type="number" min="0" step="0.01" value="495" />
+          <div class="hint">Editable (£/year). Treated as already paid until the renewal date.</div>
         </div>
 
         <div class="col-6 kpi">
-          <span class="pill">Daily rate difference</span>
+          <div class="title">Daily rate difference</div>
           <div>Per-day (Premium − Basic): <b id="dailyRate">£0.00</b></div>
-          <div class="hint">Leap years handled. If the period spans multiple years, each year’s length is respected.</div>
+          <div class="hint">Handles leap years and multi‑year spans.</div>
         </div>
-
         <div class="col-6 kpi total">
-          <span class="pill">Amount to charge now</span>
+          <div class="title">Amount to charge</div>
           <div>Prorated total for <span id="daysLabel">0</span> day(s): <b id="total">£0.00</b></div>
           <div class="hint">Rounded to the nearest penny.</div>
         </div>
@@ -95,12 +96,12 @@
         </div>
       </div>
     </section>
+    <footer class="wrap">© <span id="year"></span> Tree View Designs</footer>
   </main>
 
   <script>
-    (function () {
-      const GBP = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n || 0);
-
+    (function(){
+      const GBP = (n)=> new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n||0);
       const els = {
         startDate: document.getElementById('startDate'),
         renewalDate: document.getElementById('renewalDate'),
@@ -115,117 +116,80 @@
         summaryBox: document.getElementById('summaryBox'),
         summaryText: document.getElementById('summaryText')
       };
+      document.getElementById('year').textContent = new Date().getFullYear();
 
-      const isLeapYear = (y) => (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
-
-      // Difference in WHOLE days (end exclusive)
-      function daysBetweenUTC(a, b) {
-        const msPerDay = 24 * 60 * 60 * 1000;
-        const d1 = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
-        const d2 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
-        return Math.max(0, Math.floor((d2 - d1) / msPerDay));
-      }
-
-      // Charge across multi-year span with proper year lengths
-      function proratedDifference(premium, basic, start, end) {
-        if (!(start instanceof Date) || !(end instanceof Date) || end <= start) return { total: 0, days: 0 };
-
-        const annualDiff = Math.max(0, Number(premium) - Number(basic)); // Premium − Basic
-        let cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
-        const endUTC = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
-        let total = 0;
-        let totalDays = 0;
-
-        while (cursor < endUTC) {
-          const year = cursor.getUTCFullYear();
-          const yearStart = new Date(Date.UTC(year, 0, 1));
-          const nextYearStart = new Date(Date.UTC(year + 1, 0, 1));
-          const sliceStart = cursor;
-          const sliceEnd = endUTC < nextYearStart ? endUTC : nextYearStart;
-
-          const daysInSlice = daysBetweenUTC(sliceStart, sliceEnd);
-          const daysInYear = isLeapYear(year) ? 366 : 365;
-
-          total += annualDiff * (daysInSlice / daysInYear);
-          totalDays += daysInSlice;
-
-          cursor = sliceEnd; // move to next slice
+      const isLeapYear=(y)=> (y%4===0&&y%100!==0) || (y%400===0);
+      const daysBetweenUTC=(a,b)=>{
+        const ms=24*60*60*1000;
+        const d1=Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate());
+        const d2=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate());
+        return Math.max(0, Math.floor((d2-d1)/ms)); // end exclusive
+      };
+      function proratedDifference(premium,basic,start,end){
+        if(!(start instanceof Date)||!(end instanceof Date)|| end<=start) return { total:0, days:0 };
+        const annualDiff=Math.max(0, Number(premium)-Number(basic));
+        let cursor=new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+        const endUTC=new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+        let total=0, days=0;
+        while(cursor<endUTC){
+          const year=cursor.getUTCFullYear();
+          const nextYearStart=new Date(Date.UTC(year+1,0,1));
+          const sliceEnd=endUTC<nextYearStart? endUTC: nextYearStart;
+          const sliceDays=daysBetweenUTC(cursor, sliceEnd);
+          const daysInYear=isLeapYear(year)?366:365;
+          total += annualDiff * (sliceDays/daysInYear);
+          days += sliceDays;
+          cursor = sliceEnd;
         }
-        return { total, days: totalDays };
+        return { total, days };
       }
-
-      function calc() {
-        const premium = Number(els.premiumAnnual.value || 0);
-        const basic = Number(els.basicAnnual.value || 0);
-
-        const startStr = els.startDate.value;
-        const renewalStr = els.renewalDate.value;
-        if (!startStr || !renewalStr) return;
-
-        const start = new Date(startStr + 'T12:00:00');
-        const renewal = new Date(renewalStr + 'T12:00:00');
-
-        const { total, days } = proratedDifference(premium, basic, start, renewal);
-
-        // Daily rate shown uses the year that contains the renewal date (reference year)
-        const refYear = renewal.getUTCFullYear();
-        const dailyRate = Math.max(0, premium - basic) / (isLeapYear(refYear) ? 366 : 365);
-
-        els.daysRemaining.value = String(days);
-        els.daysLabel.textContent = String(days);
-        els.dailyRate.textContent = GBP(dailyRate);
-        els.total.textContent = GBP(Math.round(total * 100) / 100);
-
-        // Summary
-        els.summaryBox.hidden = false;
+      function calc(){
+        const premium=Number(els.premiumAnnual.value||0);
+        const basic=Number(els.basicAnnual.value||0);
+        const sStr=els.startDate.value, rStr=els.renewalDate.value;
+        if(!sStr||!rStr) return;
+        const start=new Date(sStr+'T12:00:00');
+        const renewal=new Date(rStr+'T12:00:00');
+        const { total, days } = proratedDifference(premium,basic,start,renewal);
+        const effectiveDaily = days>0 ? total/days : 0;
+        els.daysRemaining.value=String(days);
+        els.daysLabel.textContent=String(days);
+        els.dailyRate.textContent='£'+effectiveDaily.toFixed(6);
+        els.total.textContent=GBP(Math.round(total*100)/100);
+        els.summaryBox.hidden=false;
         els.summaryText.innerHTML = `
           <ul>
-            <li>Premium start: <strong>${startStr}</strong></li>
-            <li>Renewal date: <strong>${renewalStr}</strong></li>
+            <li>Premium start: <strong>${sStr}</strong></li>
+            <li>Renewal date: <strong>${rStr}</strong></li>
             <li>Days to bill: <strong>${days}</strong></li>
-            <li>Annual difference (Premium − Basic): <strong>${GBP(Math.max(0, premium - basic))}</strong></li>
-            <li>Daily rate (reference ${refYear}): <strong>${GBP(dailyRate)}</strong></li>
+            <li>Annual difference (Premium − Basic): <strong>${GBP(Math.max(0,premium-basic))}</strong></li>
+            <li>Effective daily rate: <strong>£${effectiveDaily.toFixed(6)}</strong></li>
             <li class="ok">Amount to charge: <strong>${els.total.textContent}</strong></li>
-          </ul>
-        `;
+          </ul>`;
       }
-
-      function copySummary() {
-        const txt = [
+      function copySummary(){
+        const txt=[
           `Premium start: ${els.startDate.value}`,
           `Renewal date: ${els.renewalDate.value}`,
           `Days to bill: ${els.daysRemaining.value}`,
-          `Premium annual: £${Number(els.premiumAnnual.value || 0).toFixed(2)}`,
-          `Basic annual (already paid): £${Number(els.basicAnnual.value || 0).toFixed(2)}`,
-          `Daily rate difference: ${els.dailyRate.textContent}`,
+          `Premium annual: £${Number(els.premiumAnnual.value||0).toFixed(2)}`,
+          `Basic annual (already paid): £${Number(els.basicAnnual.value||0).toFixed(2)}`,
+          `Effective daily rate: ${els.dailyRate.textContent}`,
           `Amount to charge: ${els.total.textContent}`
         ].join('\n');
-
-        navigator.clipboard.writeText(txt).then(() => {
-          els.copy.textContent = 'Copied!';
-          setTimeout(() => (els.copy.textContent = 'Copy summary'), 1200);
-        }).catch(() => alert('Could not copy to clipboard.'));
+        navigator.clipboard.writeText(txt).then(()=>{
+          els.copy.textContent='Copied!'; setTimeout(()=>els.copy.textContent='Copy summary',1200);
+        }).catch(()=> alert('Could not copy to clipboard.'));
       }
-
       document.addEventListener('change', calc);
       document.addEventListener('input', calc);
       els.recalc.addEventListener('click', calc);
       els.copy.addEventListener('click', copySummary);
-
-      // Defaults: start = today; renewal = +12 months
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      els.startDate.value = `${yyyy}-${mm}-${dd}`;
-
-      const next = new Date(today);
-      next.setFullYear(today.getFullYear() + 1);
-      const ny = next.getFullYear();
-      const nm = String(next.getMonth() + 1).padStart(2, '0');
-      const nd = String(next.getDate()).padStart(2, '0');
-      els.renewalDate.value = `${ny}-${nm}-${nd}`;
-
+      // defaults
+      const t=new Date(); const yyyy=t.getFullYear(); const mm=String(t.getMonth()+1).padStart(2,'0'); const dd=String(t.getDate()).padStart(2,'0');
+      els.startDate.value=`${yyyy}-${mm}-${dd}`;
+      const n=new Date(t); n.setFullYear(t.getFullYear()+1);
+      els.renewalDate.value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
       calc();
     })();
   </script>
