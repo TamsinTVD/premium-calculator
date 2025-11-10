@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tree View Designs · Premium Upgrade Calculator</title>
+  <style>
+    :root{--bg:#0b0c0c;--ink:#1f2937;--muted:#6b7280;--surface:#ffffff;--soft:#f6f7fb;--brand1:#06b6d4;--brand2:#7c3aed;--ring:rgba(124,58,237,.25)}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--soft);color:var(--ink)}
+    .topbar{background:linear-gradient(90deg,var(--brand1),#4f46e5,var(--brand2));height:8px}
+    header{background:#fff;padding:18px 16px;border-bottom:1px solid #e5e7eb}
+    .wrap{max-width:980px;margin:0 auto;padding:0 12px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand img{height:54px;width:auto}
+    .brand h1{font-size:1.35rem;margin:0}
+    .brand small{display:block;color:var(--muted);margin-top:2px}
+    .card{background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:18px;margin:18px auto}
+    .grid{display:grid;gap:14px;grid-template-columns:repeat(12,minmax(0,1fr))}
+    .col-12{grid-column:span 12}.col-6{grid-column:span 6}.col-4{grid-column:span 4}
+    @media (max-width:860px){.col-6,.col-4{grid-column:span 12}}
+    label{display:block;font-weight:600;margin-bottom:6px}
+    .hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+    input[type='date'],input[type='number']{width:100%;padding:.7rem .85rem;border:1px solid #e5e7eb;border-radius:12px;background:#fff;font-size:1rem;outline:none;transition:box-shadow .15s,border-color .15s}
+    input:focus{border-color:#7c3aed;box-shadow:0 0 0 4px var(--ring)} input[readonly]{background:#f9fafb;color:#6b7280}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-radius:12px;border:1px solid #4f46e5;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#fff;color:#4f46e5}
+    .kpi{background:#f8fafc;border:1px dashed #e5e7eb;border-radius:14px;padding:12px}
+    .kpi .title{font-size:.8rem;font-weight:700;color:#4338ca;text-transform:uppercase;letter-spacing:.02em}
+    .total{background:#ecfdf5;border:1px solid #a7f3d0}
+    .summary{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .ok{color:#16a34a;font-weight:700}
+    footer{color:#6b7280;font-size:.85rem;padding:20px 0}
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <header>
+    <div class="wrap brand">
+      <img src="assets/tvd-logo.png" alt="Tree View Designs logo" />
+      <div>
+        <h1>Tree View Designs — Premium Upgrade Calculator</h1>
+        <small>Prorates the additional amount between the Premium start date and the customer’s renewal date.</small>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="grid">
+        <div class="col-6">
+          <label for="startDate">Premium start date</label>
+          <input id="startDate" type="date" />
+          <div class="hint">Date Premium cover begins.</div>
+        </div>
+        <div class="col-6">
+          <label for="renewalDate">Annual renewal date</label>
+          <input id="renewalDate" type="date" />
+          <div class="hint">Customer’s next renewal date.</div>
+        </div>
+
+        <div class="col-4">
+          <label for="daysRemaining">Days remaining until renewal</label>
+          <input id="daysRemaining" type="number" min="0" step="1" readonly />
+          <div class="hint">Auto-calculated from the two dates.</div>
+        </div>
+        <div class="col-4">
+          <label for="premiumAnnual">Premium annual fee</label>
+          <input id="premiumAnnual" type="number" min="0" step="0.01" value="895" />
+          <div class="hint">Editable (£/year).</div>
+        </div>
+        <div class="col-4">
+          <label for="basicAnnual">Basic annual fee (already paid)</label>
+          <input id="basicAnnual" type="number" min="0" step="0.01" value="495" />
+          <div class="hint">Editable (£/year). Treated as already paid until the renewal date.</div>
+        </div>
+
+        <div class="col-6 kpi">
+          <div class="title">Daily rate difference</div>
+          <div>Per-day (Premium − Basic): <b id="dailyRate">£0.00</b></div>
+          <div class="hint">Handles leap years and multi‑year spans.</div>
+        </div>
+        <div class="col-6 kpi total">
+          <div class="title">Amount to charge</div>
+          <div>Prorated total for <span id="daysLabel">0</span> day(s): <b id="total">£0.00</b></div>
+          <div class="hint">Rounded to the nearest penny.</div>
+        </div>
+
+        <div class="col-12">
+          <button class="btn" id="recalc" type="button">Recalculate</button>
+          <button class="btn secondary" id="copy" type="button">Copy summary</button>
+        </div>
+
+        <div class="col-12 summary" id="summaryBox" hidden>
+          <strong>Summary</strong>
+          <div id="summaryText"></div>
+        </div>
+      </div>
+    </section>
+    <footer class="wrap">© <span id="year"></span> Tree View Designs</footer>
+  </main>
+
+  <script>
+    (function(){
+      const GBP = (n)=> new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n||0);
+      const els = {
+        startDate: document.getElementById('startDate'),
+        renewalDate: document.getElementById('renewalDate'),
+        daysRemaining: document.getElementById('daysRemaining'),
+        premiumAnnual: document.getElementById('premiumAnnual'),
+        basicAnnual: document.getElementById('basicAnnual'),
+        dailyRate: document.getElementById('dailyRate'),
+        daysLabel: document.getElementById('daysLabel'),
+        total: document.getElementById('total'),
+        recalc: document.getElementById('recalc'),
+        copy: document.getElementById('copy'),
+        summaryBox: document.getElementById('summaryBox'),
+        summaryText: document.getElementById('summaryText')
+      };
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      const isLeapYear=(y)=> (y%4===0&&y%100!==0) || (y%400===0);
+      const daysBetweenUTC=(a,b)=>{
+        const ms=24*60*60*1000;
+        const d1=Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate());
+        const d2=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate());
+        return Math.max(0, Math.floor((d2-d1)/ms)); // end exclusive
+      };
+      function proratedDifference(premium,basic,start,end){
+        if(!(start instanceof Date)||!(end instanceof Date)|| end<=start) return { total:0, days:0 };
+        const annualDiff=Math.max(0, Number(premium)-Number(basic));
+        let cursor=new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+        const endUTC=new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+        let total=0, days=0;
+        while(cursor<endUTC){
+          const year=cursor.getUTCFullYear();
+          const nextYearStart=new Date(Date.UTC(year+1,0,1));
+          const sliceEnd=endUTC<nextYearStart? endUTC: nextYearStart;
+          const sliceDays=daysBetweenUTC(cursor, sliceEnd);
+          const daysInYear=isLeapYear(year)?366:365;
+          total += annualDiff * (sliceDays/daysInYear);
+          days += sliceDays;
+          cursor = sliceEnd;
+        }
+        return { total, days };
+      }
+      function calc(){
+        const premium=Number(els.premiumAnnual.value||0);
+        const basic=Number(els.basicAnnual.value||0);
+        const sStr=els.startDate.value, rStr=els.renewalDate.value;
+        if(!sStr||!rStr) return;
+        const start=new Date(sStr+'T12:00:00');
+        const renewal=new Date(rStr+'T12:00:00');
+        const { total, days } = proratedDifference(premium,basic,start,renewal);
+        const effectiveDaily = days>0 ? total/days : 0;
+        els.daysRemaining.value=String(days);
+        els.daysLabel.textContent=String(days);
+        els.dailyRate.textContent='£'+effectiveDaily.toFixed(6);
+        els.total.textContent=GBP(Math.round(total*100)/100);
+        els.summaryBox.hidden=false;
+        els.summaryText.innerHTML = `
+          <ul>
+            <li>Premium start: <strong>${sStr}</strong></li>
+            <li>Renewal date: <strong>${rStr}</strong></li>
+            <li>Days to bill: <strong>${days}</strong></li>
+            <li>Annual difference (Premium − Basic): <strong>${GBP(Math.max(0,premium-basic))}</strong></li>
+            <li>Effective daily rate: <strong>£${effectiveDaily.toFixed(6)}</strong></li>
+            <li class="ok">Amount to charge: <strong>${els.total.textContent}</strong></li>
+          </ul>`;
+      }
+      function copySummary(){
+        const txt=[
+          `Premium start: ${els.startDate.value}`,
+          `Renewal date: ${els.renewalDate.value}`,
+          `Days to bill: ${els.daysRemaining.value}`,
+          `Premium annual: £${Number(els.premiumAnnual.value||0).toFixed(2)}`,
+          `Basic annual (already paid): £${Number(els.basicAnnual.value||0).toFixed(2)}`,
+          `Effective daily rate: ${els.dailyRate.textContent}`,
+          `Amount to charge: ${els.total.textContent}`
+        ].join('\n');
+        navigator.clipboard.writeText(txt).then(()=>{
+          els.copy.textContent='Copied!'; setTimeout(()=>els.copy.textContent='Copy summary',1200);
+        }).catch(()=> alert('Could not copy to clipboard.'));
+      }
+      document.addEventListener('change', calc);
+      document.addEventListener('input', calc);
+      els.recalc.addEventListener('click', calc);
+      els.copy.addEventListener('click', copySummary);
+      // defaults
+      const t=new Date(); const yyyy=t.getFullYear(); const mm=String(t.getMonth()+1).padStart(2,'0'); const dd=String(t.getDate()).padStart(2,'0');
+      els.startDate.value=`${yyyy}-${mm}-${dd}`;
+      const n=new Date(t); n.setFullYear(t.getFullYear()+1);
+      els.renewalDate.value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+      calc();
+    })();
+  </script>
+</body>
+</html>
