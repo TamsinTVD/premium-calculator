@@ -30,6 +30,7 @@
     .summary{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
     .ok{color:#16a34a;font-weight:700}
     footer{color:#6b7280;font-size:.85rem;padding:20px 0}
+    a.nav{color:#4f46e5;text-decoration:none}
   </style>
 </head>
 <body>
@@ -77,7 +78,7 @@
         <div class="col-6 kpi">
           <div class="title">Daily rate difference</div>
           <div>Per-day (Premium − Basic): <b id="dailyRate">£0.00</b></div>
-          <div class="hint">Handles leap years and multi‑year spans.</div>
+          <div class="hint">Handles leap years and multi-year spans.</div>
         </div>
         <div class="col-6 kpi total">
           <div class="title">Amount to charge</div>
@@ -94,6 +95,16 @@
           <strong>Summary</strong>
           <div id="summaryText"></div>
         </div>
+
+        <!-- ✅ Added this link below the summary box -->
+        <div class="col-12">
+          <p class="hint">
+            Need the Early Upgrade Calculator?
+            <a class="nav" href="early-upgrade.html">Open it here →</a>
+          </p>
+        </div>
+        <!-- ✅ End added block -->
+
       </div>
     </section>
     <footer class="wrap">© <span id="year"></span> Tree View Designs</footer>
@@ -158,12 +169,6 @@
         els.total.textContent=GBP(Math.round(total*100)/100);
         els.summaryBox.hidden=false;
         els.summaryText.innerHTML = `
-        <div class="col-12">
-  <p class="hint">
-    Need the Early Upgrade Calculator?
-    <a class="nav" href="early-upgrade.html">Open it here →</a>
-  </p>
-</div>
           <ul>
             <li>Premium start: <strong>${sStr}</strong></li>
             <li>Renewal date: <strong>${rStr}</strong></li>
