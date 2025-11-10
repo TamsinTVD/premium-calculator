@@ -3,35 +3,55 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Early Website Upgrade Calculator</title>
+  <title>Tree View Designs · Early Website Upgrade</title>
+  <meta name="theme-color" content="#6430ff">
   <style>
-    :root{--ink:#111827;--muted:#6b7280;--card:#ffffff;--bg:#f3f4f6;--brand:#2563eb;--ring:rgba(37,99,235,.25)}
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-    header{padding:1rem 1rem .25rem}
-    h1{font-size:1.2rem;margin:0 0 .25rem} p{margin:.25rem 0;color:var(--muted)}
-    .wrap{max-width:940px;margin:0 auto;padding:0 1rem 1.25rem}
-    .card{background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:1.1rem}
-    .grid{display:grid;gap:1rem;grid-template-columns:repeat(12,minmax(0,1fr))}
-    .col-12{grid-column:span 12} .col-6{grid-column:span 6} .col-4{grid-column:span 4}
-    @media (max-width:820px){.col-6,.col-4{grid-column:span 12}}
-    label{display:block;font-weight:600;margin-bottom:.35rem}
-    .hint{font-size:.85rem;color:var(--muted);margin-top:.25rem}
-    input[type="date"],input[type="number"],input[type="text"]{width:100%;padding:.65rem .7rem;border:1px solid #e5e7eb;border-radius:10px;outline:none;background:#fff;font-size:1rem}
-    input:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--ring)}
+    :root{
+      --bg:#0b0c0c; --ink:#1f2937; --muted:#6b7280; --surface:#ffffff; --soft:#f6f7fb;
+      --brand1:#06b6d4; --brand2:#7c3aed; --brand3:#4f46e5; --ring:rgba(124,58,237,.25)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;background:var(--soft);color:var(--ink)}
+    .topbar{background:linear-gradient(90deg,var(--brand1),var(--brand3),var(--brand2));height:8px}
+    header{background:var(--surface);padding:18px 16px;border-bottom:1px solid #e5e7eb}
+    .wrap{max-width:980px;margin:0 auto;padding:0 12px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand img{height:54px;width:auto}
+    .brand h1{font-size:1.35rem;margin:0}
+    .brand small{display:block;color:var(--muted);margin-top:2px}
+    .card{background:var(--surface);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:18px;margin:18px auto}
+    .grid{display:grid;gap:14px;grid-template-columns:repeat(12,minmax(0,1fr))}
+    .col-12{grid-column:span 12}.col-6{grid-column:span 6}.col-4{grid-column:span 4}
+    @media (max-width:860px){.col-6,.col-4{grid-column:span 12}}
+    label{display:block;font-weight:600;margin-bottom:6px}
+    .hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+    input[type="date"],input[type="number"],input[type="text"]{
+      width:100%;padding:.7rem .85rem;border:1px solid #e5e7eb;border-radius:12px;background:#fff;font-size:1rem;outline:none;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    input:focus{border-color:#7c3aed;box-shadow:0 0 0 4px var(--ring)}
     input[readonly]{background:#f9fafb;color:#6b7280}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--brand);background:var(--brand);color:#fff;font-weight:700;cursor:pointer}
-    .btn.secondary{background:#fff;color:var(--brand)}
-    .kpi{background:#f9fafb;border:1px dashed #e5e7eb;border-radius:12px;padding:.9rem;display:grid;gap:.35rem}
-    .pill{display:inline-block;padding:.2rem .55rem;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:700;font-size:.75rem}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-radius:12px;border:1px solid #4f46e5;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#fff;color:#4f46e5}
+    .kpi{background:#f8fafc;border:1px dashed #e5e7eb;border-radius:14px;padding:12px}
+    .kpi .title{font-size:.8rem;font-weight:700;color:#4338ca;text-transform:uppercase;letter-spacing:.02em}
     .total{background:#ecfdf5;border:1px solid #a7f3d0}
-    .summary{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1rem}
-    code{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:.1rem .3rem}
+    .summary{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .ok{color:#16a34a;font-weight:700}
+    footer{color:#6b7280;font-size:.85rem;padding:20px 0}
+    a.nav{color:#4f46e5;text-decoration:none}
   </style>
 </head>
 <body>
-  <header class="wrap">
-    <h1>Early Website Upgrade</h1>
-    <p>Premium customers get a <strong>free website at their 3-year Premium anniversary</strong>. Charge only for the days remaining until that date.</p>
+  <div class="topbar"></div>
+  <header>
+    <div class="wrap brand">
+      <img src="assets/tvd-logo.png" alt="Tree View Designs logo" />
+      <div>
+        <h1>Tree View Designs — Early Website Upgrade</h1>
+        <small>Charge only for the days remaining until the client’s 3-year Premium anniversary.</small>
+      </div>
+    </div>
   </header>
 
   <main class="wrap">
@@ -58,25 +78,25 @@
         <div class="col-4">
           <label for="windowDays">Total days in 3-year window</label>
           <input id="windowDays" type="number" readonly />
-          <div class="hint">Exact UTC days; 1095 or 1096 if there’s a leap day.</div>
+          <div class="hint">Exact UTC day count: 1095 or 1096 (leap day).</div>
         </div>
 
         <div class="col-4">
           <label for="daysRemaining">Days remaining until free</label>
           <input id="daysRemaining" type="number" readonly />
-          <div class="hint">From today to the free website date (never negative).</div>
+          <div class="hint">From today to the free website date.</div>
         </div>
 
         <div class="col-6 kpi">
-          <span class="pill">Daily website rate</span>
+          <div class="title">Daily website rate</div>
           <div>Cost ÷ window: <b id="dailyRate">£0.00</b></div>
-          <div class="hint">Exact rate used in the multiplication.</div>
+          <div class="hint">This exact rate is multiplied by the remaining days.</div>
         </div>
 
         <div class="col-6 kpi total">
-          <span class="pill">Amount to charge now</span>
+          <div class="title">Amount to charge now</div>
           <div>Prorated total: <b id="charge">£0.00</b></div>
-          <div class="hint">Formula: <code>Website cost ÷ Window days × Days remaining</code></div>
+          <div class="hint">Formula: Website cost ÷ Window days × Days remaining.</div>
         </div>
 
         <div class="col-12">
@@ -88,13 +108,19 @@
           <strong>Summary</strong>
           <div id="summaryText"></div>
         </div>
+
+        <div class="col-12">
+          <p class="hint">Need the Premium upgrade calculator? <a class="nav" href="index.html">Open it here →</a></p>
+        </div>
       </div>
     </section>
+    <footer class="wrap">© <span id="year"></span> Tree View Designs</footer>
   </main>
 
   <script>
     (function(){
       const GBP = (n) => new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n||0);
+      document.getElementById('year').textContent = new Date().getFullYear();
 
       // UTC-safe helpers
       const floorUTC = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
@@ -133,7 +159,7 @@
         const window = daysBetweenUTC(floorUTC(start), free);
         const remain = Math.max(0, daysBetweenUTC(today, free));
 
-        // Rate and amount (your requested formula)
+        // Rate and amount
         const rate = window > 0 ? cost / window : 0;
         const amount = Math.round(rate * remain * 100) / 100;
 
@@ -153,7 +179,7 @@
             <li>Window days (start → free): <strong>${window}</strong></li>
             <li>Days remaining to free: <strong>${remain}</strong></li>
             <li>Website cost: <strong>${GBP(cost)}</strong></li>
-            <li><em>Amount to charge now</em>: <strong>${els.charge.textContent}</strong></li>
+            <li class="ok">Amount to charge now: <strong>${els.charge.textContent}</strong></li>
           </ul>
           <div class="hint">Formula used: <code>${cost.toFixed(2)} ÷ ${window} × ${remain}</code></div>
         `;
