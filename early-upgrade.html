@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Early Website Upgrade Calculator</title>
+  <style>
+    :root{--ink:#111827;--muted:#6b7280;--card:#ffffff;--bg:#f3f4f6;--brand:#2563eb;--ring:rgba(37,99,235,.25)}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    header{padding:1rem 1rem 0}
+    h1{font-size:1.2rem;margin:0 0 .25rem 0} p{margin:.25rem 0;color:var(--muted)}
+    .wrap{max-width:940px;margin:0 auto;padding:0 1rem 1.25rem}
+    .card{background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:1.1rem}
+    .grid{display:grid;gap:1rem;grid-template-columns:repeat(12,minmax(0,1fr))}
+    .col-12{grid-column:span 12} .col-6{grid-column:span 6} .col-4{grid-column:span 4}
+    @media (max-width:820px){.col-6,.col-4{grid-column:span 12}}
+    label{display:block;font-weight:600;margin-bottom:.35rem}
+    .hint{font-size:.85rem;color:var(--muted);margin-top:.25rem}
+    input[type="date"],input[type="number"],input[type="text"]{width:100%;padding:.65rem .7rem;border:1px solid #e5e7eb;border-radius:10px;outline:none;background:#fff;font-size:1rem}
+    input:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--ring)}
+    input[readonly]{background:#f9fafb;color:#6b7280}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--brand);background:var(--brand);color:#fff;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#fff;color:var(--brand)}
+    .kpi{background:#f9fafb;border:1px dashed #e5e7eb;border-radius:12px;padding:.9rem;display:grid;gap:.35rem}
+    .pill{display:inline-block;padding:.2rem .55rem;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:700;font-size:.75rem}
+    .total{background:#ecfdf5;border:1px solid #a7f3d0}
+    .summary{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1rem}
+    .ok{color:#16a34a;font-weight:700}
+    code{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:.1rem .3rem}
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <h1>Early Website Upgrade Calculator</h1>
+    <p>Premium customers get a <strong>free website at their 3-year Premium anniversary</strong>. This calculator charges only for the days remaining until that date.</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="grid">
+        <div class="col-6">
+          <label for="premiumStart">Premium start date</label>
+          <input id="premiumStart" type="date" />
+          <div class="hint">Date the customer started Premium support.</div>
+        </div>
+        <div class="col-6">
+          <label for="renewalDate">Annual renewal date</label>
+          <input id="renewalDate" type="date" />
+          <div class="hint">For reference. Does not affect the upgrade price.</div>
+        </div>
+
+        <div class="col-4">
+          <label for="daysToRenewal">Days remaining until renewal</label>
+          <input id="daysToRenewal" type="number" readonly />
+          <div class="hint">Auto-calculated from the dates above.</div>
+        </div>
+        <div class="col-4">
+          <label for="siteCost">New website cost (£)</label>
+          <input id="siteCost" type="number" min="0" step="0.01" value="1495" />
+          <div class="hint">Editable. Default £1495.</div>
+        </div>
+        <div class="col-4">
+          <label for="freeDate">Free website date (3-year anniversary)</label>
+          <input id="freeDate" type="text" readonly />
+          <div class="hint">Calculated from Premium start date.</div>
+        </div>
+
+        <div class="col-6 kpi">
+          <span class="pill">Eligibility window</span>
+          <div>Total days in 3-year window: <b id="totalWindow">0</b></div>
+          <div>Days remaining to free upgrade: <b id="daysRemaining">0</b></div>
+          <div class="hint">Uses the exact number of days between the start date and start date + 3 years (1095 or 1096).</div>
+        </div>
+
+        <div class="col-6 kpi total">
+          <span class="pill">Amount to charge now</span>
+          <div>Prorated total: <b id="charge">£0.00</b></div>
+          <div class="hint">Formula: <code>Website cost × (Days remaining ÷ Window days)</code></div>
+        </div>
+
+        <div class="col-12">
+          <button id="recalc" class="btn" type="button">Recalculate</button>
+          <button id="copy" class="btn secondary" type="button">Copy summary</button>
+        </div>
+
+        <div class="col-12 summary" id="summaryBox" hidden>
+          <strong>Summary</strong>
+          <div id="summaryText"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const GBP = (n) => new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n||0);
+
+      const els = {
+        premiumStart: document.getElementById('premiumStart'),
+        renewalDate: document.getElementById('renewalDate'),
+        daysToRenewal: document.getElementById('daysToRenewal'),
+        siteCost: document.getElementById('siteCost'),
+        freeDate: document.getElementById('freeDate'),
+        totalWindow: document.getElementById('totalWindow'),
+        daysRemaining: document.getElementById('daysRemaining'),
+        charge: document.getElementById('charge'),
+        recalc: document.getElementById('recalc'),
+        copy: document.getElementById('copy'),
+        summaryBox: document.getElementById('summaryBox'),
+        summaryText: document.getElementById('summaryText')
+      };
+
+      // Helpers
+      const addYears = (d, y) => {
+        const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        dt.setUTCFullYear(dt.getUTCFullYear() + y);
+        return dt;
+      };
+      const floorUTC = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const daysBetween = (a, b) => {
+        const ms = 24*60*60*1000;
+        const d1 = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
+        const d2 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
+        return Math.max(0, Math.floor((d2 - d1) / ms)); // end exclusive
+      };
+
+      function recalc() {
+        const startStr = els.premiumStart.value;
+        const renewStr = els.renewalDate.value;
+        const cost = Number(els.siteCost.value || 0);
+
+        if (!startStr) return;
+
+        const start = new Date(startStr + 'T12:00:00');
+        const today = new Date(); // “request” date
+        const todayUTC = floorUTC(today);
+
+        // Free website date = start + 3 years
+        const free = addYears(start, 3);
+        els.freeDate.value = free.toISOString().slice(0,10);
+
+        // Window = start → free
+        const totalWindowDays = daysBetween(floorUTC(start), free);
+        // Remaining = today → free (not negative)
+        const remainingDays = Math.max(0, daysBetween(todayUTC, free));
+
+        // For reference only: renewal
+        if (renewStr) {
+          const renewal = new Date(renewStr + 'T12:00:00');
+          els.daysToRenewal.value = String(daysBetween(todayUTC, floorUTC(renewal)));
+        } else {
+          els.daysToRenewal.value = "";
+        }
+
+        // Price: cost * (remaining / window)
+        const charge = (totalWindowDays > 0) ? cost * (remainingDays / totalWindowDays) : 0;
+
+        els.totalWindow.textContent = String(totalWindowDays);
+        els.daysRemaining.textContent = String(remainingDays);
+        els.charge.textContent = GBP(Math.round(charge * 100) / 100);
+
+        // Summary
+        els.summaryBox.hidden = false;
+        els.summaryText.innerHTML = `
+          <ul>
+            <li>Premium start: <strong>${startStr}</strong></li>
+            <li>Free website date (3 years): <strong>${els.freeDate.value}</strong></li>
+            <li>Window days (start → free): <strong>${totalWindowDays}</strong></li>
+            <li>Days remaining to free: <strong>${remainingDays}</strong></li>
+            <li>New website cost: <strong>${GBP(cost)}</strong></li>
+            <li><em>Amount to charge now</em>: <strong>${els.charge.textContent}</strong></li>
+          </ul>
+          <div class="hint">Formula used: <code>${cost.toFixed(2)} × (${remainingDays} ÷ ${totalWindowDays})</code></div>
+        `;
+      }
+
+      function copySummary() {
+        const txt = [
+          `Premium start: ${els.premiumStart.value}`,
+          `Free website date (3 years): ${els.freeDate.value}`,
+          `Window days: ${els.totalWindow.textContent}`,
+          `Days remaining to free: ${els.daysRemaining.textContent}`,
+          `New website cost: £${Number(els.siteCost.value || 0).toFixed(2)}`,
+          `Amount to charge now: ${els.charge.textContent}`
+        ].join('\n');
+        navigator.clipboard.writeText(txt).then(()=>{
+          els.copy.textContent='Copied!';
+          setTimeout(()=>els.copy.textContent='Copy summary',1200);
+        }).catch(()=> alert('Could not copy to clipboard.'));
+      }
+
+      document.addEventListener('input', (e)=>{
+        if (['premiumStart','renewalDate','siteCost'].includes(e.target.id)) recalc();
+      });
+      els.recalc.addEventListener('click', recalc);
+      els.copy.addEventListener('click', copySummary);
+
+      // Defaults
+      const t = new Date();
+      const yyyy = t.getFullYear(), mm = String(t.getMonth()+1).padStart(2,'0'), dd = String(t.getDate()).padStart(2,'0');
+      els.premiumStart.value = `${yyyy}-${mm}-${dd}`;
+      const next = new Date(t); next.setFullYear(t.getFullYear() + 1);
+      els.renewalDate.value = `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
+      recalc();
+    })();
+  </script>
+</body>
+</html>
