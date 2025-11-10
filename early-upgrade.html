@@ -7,8 +7,8 @@
   <style>
     :root{--ink:#111827;--muted:#6b7280;--card:#ffffff;--bg:#f3f4f6;--brand:#2563eb;--ring:rgba(37,99,235,.25)}
     *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-    header{padding:1rem 1rem 0}
-    h1{font-size:1.2rem;margin:0 0 .25rem 0} p{margin:.25rem 0;color:var(--muted)}
+    header{padding:1rem 1rem .25rem}
+    h1{font-size:1.2rem;margin:0 0 .25rem} p{margin:.25rem 0;color:var(--muted)}
     .wrap{max-width:940px;margin:0 auto;padding:0 1rem 1.25rem}
     .card{background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:1.1rem}
     .grid{display:grid;gap:1rem;grid-template-columns:repeat(12,minmax(0,1fr))}
@@ -25,14 +25,13 @@
     .pill{display:inline-block;padding:.2rem .55rem;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:700;font-size:.75rem}
     .total{background:#ecfdf5;border:1px solid #a7f3d0}
     .summary{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1rem}
-    .ok{color:#16a34a;font-weight:700}
     code{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:.1rem .3rem}
   </style>
 </head>
 <body>
   <header class="wrap">
-    <h1>Early Website Upgrade Calculator</h1>
-    <p>Premium customers get a <strong>free website at their 3-year Premium anniversary</strong>. This calculator charges only for the days remaining until that date.</p>
+    <h1>Early Website Upgrade</h1>
+    <p>Premium customers receive a <strong>free website at their 3-year Premium anniversary</strong>. Charge only for the days remaining until that date.</p>
   </header>
 
   <main class="wrap">
@@ -43,6 +42,7 @@
           <input id="premiumStart" type="date" />
           <div class="hint">Date the customer started Premium support.</div>
         </div>
+
         <div class="col-6">
           <label for="renewalDate">Annual renewal date</label>
           <input id="renewalDate" type="date" />
@@ -52,24 +52,26 @@
         <div class="col-4">
           <label for="daysToRenewal">Days remaining until renewal</label>
           <input id="daysToRenewal" type="number" readonly />
-          <div class="hint">Auto-calculated from the dates above.</div>
+          <div class="hint">Auto-calculated from today → renewal date.</div>
         </div>
+
         <div class="col-4">
           <label for="siteCost">New website cost (£)</label>
           <input id="siteCost" type="number" min="0" step="0.01" value="1495" />
           <div class="hint">Editable. Default £1495.</div>
         </div>
+
         <div class="col-4">
           <label for="freeDate">Free website date (3-year anniversary)</label>
           <input id="freeDate" type="text" readonly />
-          <div class="hint">Calculated from Premium start date.</div>
+          <div class="hint">Automatically calculated as Premium start + 3 years.</div>
         </div>
 
         <div class="col-6 kpi">
           <span class="pill">Eligibility window</span>
           <div>Total days in 3-year window: <b id="totalWindow">0</b></div>
-          <div>Days remaining to free upgrade: <b id="daysRemaining">0</b></div>
-          <div class="hint">Uses the exact number of days between the start date and start date + 3 years (1095 or 1096).</div>
+          <div>Days remaining to free: <b id="daysRemaining">0</b></div>
+          <div class="hint">Uses exact UTC day counts; if a leap day occurs, the window is 1096 days.</div>
         </div>
 
         <div class="col-6 kpi total">
@@ -95,6 +97,20 @@
     (function(){
       const GBP = (n) => new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n||0);
 
+      // Helpers: UTC-safe date math (prevents DST/clock issues)
+      const floorUTC = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const addYearsUTC = (d, y) => {
+        const t = floorUTC(d);
+        t.setUTCFullYear(t.getUTCFullYear() + y);
+        return t;
+      };
+      const daysBetweenUTC = (a, b) => {
+        const ms = 24*60*60*1000;
+        const d1 = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
+        const d2 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
+        return Math.max(0, Math.floor((d2 - d1) / ms)); // end exclusive
+      };
+
       const els = {
         premiumStart: document.getElementById('premiumStart'),
         renewalDate: document.getElementById('renewalDate'),
@@ -110,52 +126,37 @@
         summaryText: document.getElementById('summaryText')
       };
 
-      // Helpers
-      const addYears = (d, y) => {
-        const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-        dt.setUTCFullYear(dt.getUTCFullYear() + y);
-        return dt;
-      };
-      const floorUTC = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-      const daysBetween = (a, b) => {
-        const ms = 24*60*60*1000;
-        const d1 = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
-        const d2 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
-        return Math.max(0, Math.floor((d2 - d1) / ms)); // end exclusive
-      };
-
       function recalc() {
         const startStr = els.premiumStart.value;
         const renewStr = els.renewalDate.value;
         const cost = Number(els.siteCost.value || 0);
-
         if (!startStr) return;
 
+        // Parse dates in UTC
         const start = new Date(startStr + 'T12:00:00');
-        const today = new Date(); // “request” date
-        const todayUTC = floorUTC(today);
+        const today = floorUTC(new Date());
 
         // Free website date = start + 3 years
-        const free = addYears(start, 3);
+        const free = addYearsUTC(start, 3);
         els.freeDate.value = free.toISOString().slice(0,10);
 
-        // Window = start → free
-        const totalWindowDays = daysBetween(floorUTC(start), free);
-        // Remaining = today → free (not negative)
-        const remainingDays = Math.max(0, daysBetween(todayUTC, free));
+        // Window = start → free; Remaining = today → free
+        const windowDays = daysBetweenUTC(floorUTC(start), free);
+        const remainingDays = Math.max(0, daysBetweenUTC(today, free));
 
-        // For reference only: renewal
+        // Renewal info (optional, read-only)
         if (renewStr) {
           const renewal = new Date(renewStr + 'T12:00:00');
-          els.daysToRenewal.value = String(daysBetween(todayUTC, floorUTC(renewal)));
+          els.daysToRenewal.value = String(daysBetweenUTC(today, floorUTC(renewal)));
         } else {
           els.daysToRenewal.value = "";
         }
 
-        // Price: cost * (remaining / window)
-        const charge = (totalWindowDays > 0) ? cost * (remainingDays / totalWindowDays) : 0;
+        // Price = cost × (remaining ÷ window)
+        const charge = windowDays > 0 ? cost * (remainingDays / windowDays) : 0;
 
-        els.totalWindow.textContent = String(totalWindowDays);
+        // Update UI
+        els.totalWindow.textContent = String(windowDays);
         els.daysRemaining.textContent = String(remainingDays);
         els.charge.textContent = GBP(Math.round(charge * 100) / 100);
 
@@ -165,12 +166,12 @@
           <ul>
             <li>Premium start: <strong>${startStr}</strong></li>
             <li>Free website date (3 years): <strong>${els.freeDate.value}</strong></li>
-            <li>Window days (start → free): <strong>${totalWindowDays}</strong></li>
+            <li>Window days (start → free): <strong>${windowDays}</strong></li>
             <li>Days remaining to free: <strong>${remainingDays}</strong></li>
             <li>New website cost: <strong>${GBP(cost)}</strong></li>
             <li><em>Amount to charge now</em>: <strong>${els.charge.textContent}</strong></li>
           </ul>
-          <div class="hint">Formula used: <code>${cost.toFixed(2)} × (${remainingDays} ÷ ${totalWindowDays})</code></div>
+          <div class="hint">Formula used: <code>${cost.toFixed(2)} × (${remainingDays} ÷ ${windowDays})</code></div>
         `;
       }
 
@@ -189,17 +190,18 @@
         }).catch(()=> alert('Could not copy to clipboard.'));
       }
 
-      document.addEventListener('input', (e)=>{
+      // Wire up
+      document.addEventListener('input', (e) => {
         if (['premiumStart','renewalDate','siteCost'].includes(e.target.id)) recalc();
       });
       els.recalc.addEventListener('click', recalc);
       els.copy.addEventListener('click', copySummary);
 
-      // Defaults
+      // Sensible defaults
       const t = new Date();
       const yyyy = t.getFullYear(), mm = String(t.getMonth()+1).padStart(2,'0'), dd = String(t.getDate()).padStart(2,'0');
       els.premiumStart.value = `${yyyy}-${mm}-${dd}`;
-      const next = new Date(t); next.setFullYear(t.getFullYear() + 1);
+      const next = new Date(t); next.setFullYear(t.getFullYear()+1);
       els.renewalDate.value = `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
       recalc();
     })();
